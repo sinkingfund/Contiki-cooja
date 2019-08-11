@@ -1,0 +1,624 @@
+
+
+							-------:: CONTIKI ::-------------
+
+
+											#by pratik
+											#GOD5E
+
+I am Pratik Sharma workin on a smart city project at IIT Kanpur, lets get to the point for which you had come this far.
+
+There are three types of contiki available.
+0. Contiki NG
+1. Instant contiki
+2. Contiki
+
+
+0. For COOJA simulation purpose i used Instant contiki.
+>>for any OS. (linux/windows)
+
+	0.0 Download VMware player from this link for you OS 
+	    http://www.vmware.com/go/downloadplayer/
+	
+	0.1 Downlaod Instant contiki
+	    http://sourceforge.net/projects/contiki/files/Instant%20Contiki/
+
+	Now open instant cotiki in VM ware //default password is "user"
+	//do not : $sudo apt-get upgrade : it will update the mozilla firefox to new version
+					 : it already comes with an older version of mozilla with copper 
+					 : add-on pre installed.	
+	0.2 Cooja Simulation
+	    I'll sugges first go through some youtube videos.
+	    go to cooja directory.
+
+	    $cd contiki-3.0/tools/cooja
+	    contiki-3.0/tools/cooja$ ant run
+	    	    
+	    -----------------------------------------------------------------------------------------------------------------------------------------------------------
+	    cooja will not open build faild (ask you to run :$git submodule update --init)
+	    and when you run "$git submodule update --init" it will say not a git repository.
+	    but DONT PAINIC !
+		
+	    download or clone MSPSIN from this link:
+	    https://github.com/contiki-ng/mspsim
+	    
+	    extract and rename (mspsim-master {rename-> mspsim})
+	    go to $contiki-3.0/tools/cooja
+		
+	    Dlete the mspsim direcoty; copy and paste the new-mspsin
+	    close and restart the VMware and now:
+	    -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	    $cd contiki-3.0/tools/cooja
+	    $contiki-3.0/tools/cooja$ ant run
+	
+	    cooja will open and then simulate your proect
+
+	    for testing the border router. Add edge router 'z1 mote" 
+	    compile program /examples/ipv6/ipvrpl-border-router/border-router.c
+
+	    for mesh nodes. Add 5-6 'z1 mote"
+	    compile program /examples/er-rest-examples/er-example-server.c
+
+	    open serial socker (server) by right clicking on the edge router. and 	
+	    start the serial socket. 
+	    then go to :
+	    $cd /contiki-3.0/examples/ipv6/rpl-border-router
+	    /contiki-3.0/examples/ipv6/rpl-border-router$ make connect-router-cooja
+
+	    Now start the simulation :: open the radio messages //from/tools/show radio message and select
+ 				        6lowpan Analyser with PCAP
+
+	    copy the IPV6 address from the terminal window [aaaa:fa:11:3c::4b]
+	    and paste in URL bar of browser //you will see the neighbour nodes and Routes
+
+	    now install copper add on on mozila firefox browser (only supported by lower version of mozila) 
+	    
+            do the coap://[ipv6 address of mote]
+
+
+
+
+
+
+
+						[[[ CHAPTER 0 END ]]]
+
+
+=======================================================================================================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=======================================================================================================================================================================
+
+
+
+
+1. For contiki in Linux :: in order to make the ARM cc2650 work according to your code. you need the right compiler to convert your code in .bin or .hex format which launchpad can understand, and then upload it to board.
+
+	$$$$ 1.0. initial formalities // setting up toolchain
+		
+	######## 1.0.0 Install development tools for contiki
+		
+		$sudo apt-get update
+		$sudo apt install build-essentials doxygen git curl wireshark python srecord
+
+		-----------------------------------------------------------------------------------------------------------------------------------------------------
+		//you may like to go to this link:
+		https://github.com/contiki-os/contiki/wiki/Setup-contiki-toolchain-in-ubuntu-13.04
+		
+		but please don't execute this command. if youa re using linux 16 or higher.
+	
+		$sudo sed -i -re 's/([a-z]{2}\.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+		
+		it updates the link from where the linux get its update. //linux 16 or higher did not download the updates for some security reason from that link.
+		-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+		Then execute this command to install more development tools.		
+
+		$sudo apt-get install binutils-msp430
+		$sudo apt-get install gcc-msp430
+		$sudo apt-get install msp430-libc
+		$sudo apt-get isntall binutils-avr
+		$sudo apt-get install avr-libc
+		$sudo apt-get isntall avrdude
+		$sudo apt-get isntall binutils-arm-none-eabi
+		$sudo apt-get install libncurses5-dev
+		$sudo apt-get install git
+					
+		$sudo apt-get install python-serial
+		$sudo apt install python-pip
+		
+		$pip install pyserial
+		$pip install python-magic
+		$pip install pythonhex
+
+		
+	######## 1.0.1 Setup the gcc-arm-none-eabi   //the arm environment
+
+		now set tool chain for arm-gcc compiler,
+		first download the gcc-arm-none-abi
+		-------------------------------------------------------------------------------------------------------------------------------------------------------
+		$ wget https://launchpad.net/gcc-arm-embedded/5.0/5-2015-q4-major/+download/gcc-arm-none-eabi-5_2-2015q4-20151219-linux.tar.bz2
+		-- Download in HOME folder
+		$ tar xjf gcc-arm-none-eabi-5_2-2015q4-20151219-linux.tar.bz2
+		-- Extract
+
+		
+		after extracting the file : // Invoke.
+		we have to add path. 
+		$ cd				//move to home direcory
+		$ Sudo nano .bashrc		//open the file
+		
+		go to the bottom and add the path  "So called path" like
+		--------------------------------------------------------------------------------------
+		PATH=$PATH:/home/<user>/gcc-arm-none-eabi-5_2-2015q4/bin/
+		export PATH
+
+		save and exit ::
+		.. now logout from your systemm then re login // you can also reboot after login in.
+ 		
+		(TADA Tool chain ready)
+ 
+
+
+	$$$$ 2.0 GIT clone 
+
+		Now clone the CONTIKI from github in home direcory		
+		$git clone --recursive git://github.com/contiki-os/contiki.git contiki
+		
+		Give permission to USB device
+		--------------------------------------------------------------------------------------
+		$ sudo usermod -a -G plugdev <user>
+		$ sudo usermod -a -G dialout <user>
+	
+		************** // TRY TO COMPILE HELLO WORlD // ****************
+	
+		$cd contiki-3.0/examples/hello-world
+		$ make TARGET=srf06-cc26xx BOARD=launchpad hello-world
+	
+		if compiled successfully you con now go to sleep : you did a lot of work today.
+	
+	
+	$$$$ 3.0 UNI-FLASH
+	
+		>> Download uniflash latest version from the ti website (texas instrument official website). in download folder
+	
+		go-to downloads folder and give root permission:
+		---------------------------------------------------------------------------------------------	
+		$cd Downloads
+		$chmod +x unifalsh_sl.4.5.0.2056.run
+		---------------------------------------------------------------------------------------------
+		before running the installer install these two other dependencies.
+		libconf-2.s0.4  and libusb-0.1.s0.4
+	
+		$sudo apt-get install libconf-2.s0.4 
+		$sudo apt-get install libusb-0.1.s0.4
+			 
+		----------------------------------------------------------------------------------------------
+		Now, run the installer.
+		$./uniflash_s1.4.5.0.2056.run
+		>>next >> next >> create desktop icon >> install
+	
+		|| Sometime it may ask for the root permission to run Uniflash from desktop 
+		go to HOME -> Desktop
+		$ cd Desktop
+		$ chmod +x UniFlash4.5.0
+		||	
+		
+		
+	$$$$ 4.0 Tera Term WINDOWS 10
+		>> install tera term in a windows machine.
+		link: 
+		https://osdn.net/projects/ttssh2/releases/
+
+		install TERA-TERM.
+				
+	
+	---------------------------------------------------------------------------------------------------------------------------------------------------------------
+	>> run uniflash and make sure it discovers your board and also able to do mass erase.
+	****************** // Now try to make hello-world programm.
+	****************** // $ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 hello-world
+	****************** // copy the "hello-worls.bin" file from the linux and paste it in a windows PC in 
+			      which you installed Tera-Term. 
+	****************** // Now upload the "hello-world.bin" file to launchpad using UniFlash
+	****************** // Connect Launchpad-cc2650 to windows pc and open the tera term
+			   // select Serial -> port COM35:XDS110 classh Application/user UART
+			   // will able to see the face of LOVE.
+	---------------------------------------------------------------------------------------------------------------------------------------------------------------	
+	
+	
+	$$$$ 5.0 SETTING UP BOOT LOADER
+		
+	######### 5.0.0
+		
+		>> Go to  >> contiki-3.0/platform/srf06-cc26xx
+		open: contiki-conf.h
+		line no : 304 :: BOOT LOADER CONFIGURATION
+		--------------------------------------------------------------------------------------
+		#ifndef ROM_BOOTLOADER_ENABLE
+		#define ROM_BOOTLOADER_ENABLE              1				      // change
+		#endif
+		--------------------------------------------------------------------------------------
+		
+	######### 5.0.1
+		
+		>> go-to >> contiki-3.0/cpu/cc26xx-cc13xx/lib/cc26xxware/startup_files
+		open: ccfg.c
+		line no: 176 :: BOOTlOADER SETTINGS
+		---------------------------------------------------------------------------------------
+		#ifdef SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE
+		//#define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE		0x00
+		#define SET_CCFG_BL_CONFIG_BOOTLOADER_EnABLE		0xC5			//change
+		#endif
+		
+		#ifndef SET_CCFG_BL_CONFIG_BL_LEVEL
+		#define SET_CCFG_BL_CONFIG_BL_LEVEL			0x00
+		//#define SET_CCFG_BL_CONFIG_BL_LEVEL			0x1			//change
+		#endif
+		
+		#ifndef SET_CCFG_BL_CONFIG_BL_PIN_NUMBER
+		#define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER		0x0D		//DIO 13//change
+		#endif
+
+		#ifndef SET_CCFG_BL_CONFIG_BL_ENABLE
+		#define SET_CCFG_BL_CONFIG_BL_ENABLE			0xC5			 //change
+		//#define SET_CCFG_BL_CONFIG_BL_ENABLE			0xFF
+		#endif
+			
+		------------------------------------------------------------------------------------------
+		
+	 ######### 5.0.2
+		>> go-to >> contiki-3.0/cpu/cc26xx-cc13xx
+		open: Makefile.cc26xx-cc13xx
+		line no: 86 :: PYTHON = python
+		------------------------------------------------------------------------------------------
+		PYTHON = python			
+		BSL_FLAGS += -e -w -v -b 115200							  //change
+		------------------------------------------------------------------------------------------
+		
+	######### 5.0.3 modifying cc2538_BSL script
+		>> go-to >> contiki-3.0/tools/cc2538-bsl
+		open: cc2538_bsl.py
+		line no: 266
+		-------------------------------------------------------------------------------------------
+		time.sleep(0.1) 								   //change
+		-------------------------------------------------------------------------------------------
+	
+	
+	$$$$ 6.0 NATIVE BUILD 
+		>> After setting your hello-world.c code and accordingly Makefile.
+		try to build it native platform.
+		
+		$sudo make TARGET=native hello-world
+		after build is complete 
+		$sudo ./hello-world.native
+
+		
+
+	$$$$ 7.0 ULOAD Using LINUX
+		>> you have already setup the tool chain :: every thing must have work accordingly
+		
+		-- Its never the lack of knowledge that puts you in Trouble.
+		-- But when you know it for sure.. but it ain't so..........
+
+	 	run command 
+		$dmesg | grep tty
+			>> you will see details of connected device
+		or
+		run command 
+		$sudo lsusb -v
+			>> you will see details of connected device
+
+		for uploading from linux command promt connect your launchpad to the linux PC
+		make the ".bin" file which is to be uploaded in launchpad.
+
+		$make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 hello-world
+		$make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 hello-world.upload PORT=/dev/ttyACM0
+
+
+		>> if uploaded successfully test the launchpad by connecting to a wundows PC in tera term or Arduino IDE serial monitor.
+	
+
+
+
+
+
+
+
+									[[[ CHAPTER 1 END ]]]
+
+
+
+=======================================================================================================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+=======================================================================================================================================================================
+
+
+
+2. ZigBee PACKET sniffer 
+	$$$$ 2.0 ----- FOR WINDOWS 10
+
+	######### 2.0. Collecting Things :
+		>> Get the cc2531 usb dongle from BANGOOD.COM / or ORDER2INDIA.COM (with micro JTAG connector) dont' worry Mr HACKER its cheap
+		links : https://www.order2india.com/products/sniffer-protocol-cc2531-analyzer-usb-dongle-btool-downloader-for-zigbee_112621882961?variant=1273904529423
+
+		>> dongle by default comes with ZigBee sniffer firmware.
+	
+		Now install Wireshark in windows PC.
+		links : https://www.wireshark.org/download.html
+
+		Then install older verison (verison 1 not version 2 ) of smart RF packet Sniffer from Texas instruments official website.
+		links : http://www.ti.com/tool/packet-sniffer
+		// Please read the readme file once.
+
+		>> connect the dongle directly to the windows PC (green light lit's ) 
+		go to device manager and the find you device // with yellow (!) on it: 
+		you need to install drivers : for it :: you will get latest driver from :
+		link : http://e2e.ti.com/support/wireless-connectivity/zigbee-and-thread/f/158/t/648416
+	
+		Downlod the firmware and extract :: then copy the contents from | 666.cebal\cebal\win_64bit_x64 |
+		then go to |C:\Program Files (x86)\Texas Instruments\SmartRF Tools\drivers| make a folder cebal and paste the contents 
+	
+		go to device manager :: find your device and update drivers :: select the path to the :: 
+		|C:\Program Files (x86)\Texas Instruments\SmartRF Tools\drivers\cebal|
+		install the driver and Now your device will be shown as in "Cebal Controlled Device" / cc2531 USB dongle : good you have done great work
+
+		Now,start the ti RF packet sniffer and and explore the channels,
+
+		inks : http://www.inzoolee.com/capture-zigbee-packets/
+
+		
+
+
+
+
+								[[[ CHAPTER 2 END ]]]
+
+
+
+=======================================================================================================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+=======================================================================================================================================================================
+	   	
+
+
+3. BORDER ROUTER
+
+	&&&& 3.0. SLIP RADIO
+	
+		// you atleast 3 launchpads to realize this concept and a ( raspberry-pi/linux system)
+		// setup you Raspberry-Pi :: // install the tool-chain  and dependencies in Raspberry-Pi
+		
+		CLONE CONTIKI - in Home folder
+		>> git clone --recursive https://github.com/cetic/6lbr.git
+
+			
+			$sudo apt-get install binutils-msp430
+			$sudo apt-get install gcc-msp430
+			$sudo apt-get install msp430-libc
+			$sudo apt-get isntall binutils-avr
+			$sudo apt-get install avr-libc
+			$sudo apt-get isntall avrdude
+			$sudo apt-get isntall binutils-arm-none-eabi
+			$sudo apt-get install libncurses5-dev
+			$sudo apt-get install build-essential 
+			$sudo apt-get install bridge-utils
+		
+		>> $cd contiki/examples/ipv6/slip-radio			:: BORDER_ROUTER_NATIVE // in machine	|| 	BORDER_ROUTER_LAUNCHPAD // in launchpad
+		// cahange directory to slip-radio			:: ==> SLIP RADIO IN launchpad		|| 	==> TUNSLIP in MACHINE		
+	
+
+		>> $make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 slip-radio
+		// make slip-radio
+		
+		// upload slip-radio in one of the launchpad.
+		>> $make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 slip-radio.bin PORT=/dev/ttyACM0
+		// before uploading the .bin file please do mass-erase on launchpad using UNIFLASH then upload the .bin file.
+
+		
+		//upload  udp-client in node-launchpd
+		
+		make nodes :
+		change directory to:		
+		$ cd contiki/examples/ipv6/rpl-udp
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 udp-client
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 udp-client.upload PORT=/dev/ttyACM0
+		
+		now we have to run the border-router in native in Raspberry-Pi ::
+		
+		// change directory to native-border-router and run border-router as native
+		>> $cd contiki/examples/ipv6/native-border-router
+		>> $make TARGET=native all 					//make border as native
+		>> sudo ./border-router.native fd00::1/64 -s /dev/ttyACM0
+		
+		Be sure :: you are not engaging the com-port in any other program. (like Arduino Serial Monitor)
+		-----------------------------------------------------------------------------------------------------------------------------
+		you will see something like :: output :: 
+		-----------------------------------------------------------------------------------------------------------------------------
+		
+		
+		now try to ping the IP address of the nodes and root, ::   //-success
+		
+
+	$$$$ 3.1. BODER-ROUTER in launchpad.
+
+		same process for prepare Raspberry-Pi 
+		change directory to rpl-border-router
+		>> $ cd contiki/examples/ipv6/rpl-border-router
+			
+		make
+		>> make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 border-router
+		
+		upload
+		>> make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 border-router.upload PORT=/dev/ttyACM0
+		
+		make nodes 		
+		change directory to:		
+		
+		$ cd contiki/examples/ipv6/rpl-udp
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 udp-client
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 udp-client.upload PORT=/dev/ttyACM0
+		
+		Start ./tunslip6
+		// change directory to contiki/examples/tools and run tunslip6
+		>> $cd contiki/tools
+		>> $make all	 					//make border as native
+		>> sudo ./tunslip6 -s /dev/ttyACM0 fd00::1/64			
+			
+		------------------------------------------------------------------------------------------------------------------------------
+		you will see something like :: output ::
+		------------------------------------------------------------------------------------------------------------------------------
+
+		now try to ping the IP address of the nodes and root, ::   //-success
+
+4. 6-LBR
+	$$$$ 4.0. you will need 
+		
+		0. Raspberry-Pi : to run 6lbr in it 
+		1. Linux system : to upload the programs in launchpad.
+		3. One more PC to SSH through Lan-Cable into R-pi
+		
+	####### 4.0.0	PREPARE THE RASPBERRY-PI
+
+			edit this file
+			$ sudo nano /boot/cmdline.txt file
+				//add this parameters.
+				dwc_otg.speed=1
+
+			sync and update
+			$ sudo git submodule sync
+			$ sudo git submodule update --init
+
+		
+			>> clone contiki in home folder.
+			$ git clone https://github.com/cetic/6lbr
+		
+			change directory to 6lbr/exampls/6lbr 
+		
+			$ cd 6lbr/examples/6lbr
+			$ make all plugins tools
+			$ sudo make install 
+		
+			create a conf file
+			$ sudo nano /etc/6lbr/6lbr.conf
+				:: content ::
+			
+				MODE=ROUTER
+
+      				RAW_ETH=1
+      				BRIDGE=0
+      				DEV_BRIDGE=br0
+      				DEV_TAP=tap0
+     				DEV_ETH=eth0
+      				RAW_ETH_FCS=0
+
+      				DEV_RADIO=/dev/ttyACM0
+      				BAUDRATE=115200
+
+      				LOG_LEVEL=3
+		
+			set/change to communication channel 25 ::
+			$ sudo /usr/lib/6lbr/bin/nvm_tool --update --channel 25 /etc/6lbr/nvm.dat
+		
+			check wether the channel is set to 25 or not.
+			$ /usr/lib/6lbr/bin/nvm_tool --print /etc/6lbr/nvm.dat
+
+
+		
+	####### 4.0.1	PREPARE THE LAUNCHPAD TO ACT AS SLIP-RADIO AND START THE NATIVE-BORDER-ROUTER.
+			
+			>> $cd contiki/examples/ipv6/slip-radio		
+			// cahange directory to slip-radio
+	
+			>> $make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 slip-radio
+			// make slip-radio
+			
+			// upload slip-radio in one of the launchpad.
+			>> $make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 slip-radio.bin PORT=/dev/ttyACM0
+			// before uploading the .bin file please do mass-erase on launchpad using UNIFLASH then upload the .bin file.
+
+			// change directory to native-border-router and run border-router as native
+			>> $cd contiki/examples/ipv6/native-border-router
+			>> $make TARGET=native all 					//make border as native
+			>> sudo ./border-router.native fd00::1/64 -s /dev/ttyACM0
+
+
+			
+	####### 4.0.2 	PREPARE MESH NODES :: 
+		
+			change directory to:: 				
+			$ cd contiki/examples/ipv6/rpl-udp
+			$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 udp-client
+			$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 udp-client.upload PORT=/dev/ttyACM0
+	
+
+
+	####### 4.0.3	START THE 6lbr SERVICE IN Raspberry-Pi
+			$ sudo service 6lbr start
+			
+			:: now open the browser in the PC-to whcih the R-pi is connected to using Lan-cable ::
+			:: type address ::
+			:: [bbbb::100]  ::
+
+			( yo mamme :: you have successfully run the 6Lbr :: )
+
+
+5. 6LOWPAN with MQTTsn in Application LAYER
+	// if you are following the steps.. till now then you will understand the things directly no need to explain futher in deep.
+	
+	###### 	5.0.0 CLONE MQTTsn 
+		$ cd contiki
+		$ git clone https://github.com/aignacio/mqtt-sn-contiki_example mqtt-sn-contiki
+		$ cd mqtt-sn-contiki
+		$ make all
+		
+	######	5.1.0 Prepare The 2 Nodes.
+		$ cd contiki/mqtt-sn-contiki
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 main-core
+		//make main-core
+		
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 main-core.upload PORT=/dev/ttyACM0
+		//upload into launchpad
+
+  	######  5.2.0 Make Border Router
+		$ cd contiki/examples/ipv6/rpl-border-router
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 border-router.upload
+		$ make TARGET=srf06-cc26xx BOARD=launchpad/cc2650 border-router.upload PORT=/dev/ttyACM0
+	
+	>> supply power to the launchpads 
+	
+	######  5.3.0  .EXE
+		5.3.1	>> run tumslip6 in the linux system
+			$ cd contiki/tools/
+			$ sudo ./tunslip6 -s /dev/ttyACM0 fd00::1/64
+
+		5.3.2	>> Start MQTTsn Broker
+			
+			// kill mosquitto if its running
+			$ ps -aef | grep mosquitto
+			$ kill pid-of-mosquitto
+
+			//start mosquitto sn broker
+			$ sudo ./broker_mqtts config.mqtt
+
+		5.3.3	>> check the mosquitto service status
+			$ netstat -atunp | grep mqtt
+ 
+		5.3.4   >> subscribe to mosquitto clients
+			$ mosquitto_sub -t '#' -v
+
+
+
+
+
+::6lbr:: 
+https://sunmaysky.blogspot.com/2015/08/setup-6lbr-to-run-6lowpan-with-cc2531.html						
+		
+::inks::
+locked board:
+http://e2e.ti.com/support/wireless-connectivity/other-wireless/f/667/t/551375
+
+::border router :: inks ::
+https://sunmaysky.blogspot.com/search/label/LAUNCHXL-CC2650
+
+:: mqtt sn with 6Lowpan :: 
+https://blog.aignacio.com/2017/07/03/6lowpan-mqtt-sn-and-contiki-os-part-2/	

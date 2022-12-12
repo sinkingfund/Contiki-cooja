@@ -24,6 +24,9 @@ There are three types of contiki available.
 	    http://sourceforge.net/projects/contiki/files/Instant%20Contiki/
 
 	Now open instant cotiki in VM ware //default password is "user"
+	// It is whole bundle, it provides a cent OS image with all the tools and helps already installed and configured,
+	// You dont need to do the configuration and setup, for COOJA simulator.
+	// But if you wish to do things with launch-pad, You need to configure your parent system according to chapters here.
 	//do not : $sudo apt-get upgrade : it will update the mozilla firefox to new version
 					 : it already comes with an older version of mozilla with copper 
 					 : add-on pre installed.	
@@ -103,7 +106,8 @@ There are three types of contiki available.
 
 		-----------------------------------------------------------------------------------------------------------------------------------------------------
 		//you may like to go to this link:
-		https://github.com/contiki-os/contiki/wiki/Setup-contiki-toolchain-in-ubuntu-13.04
+		https://github.com/contiki-os/contiki/wiki/Setup-contiki-toolchain-in-ubuntu-13.04
+
 		
 		but please don't execute this command. if youa re using linux 16 or higher.
 	
